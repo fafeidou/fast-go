@@ -26,7 +26,7 @@ var commonInitialisms = []string{"API", "ASCII", "CPU", "CSS", "DNS", "EOF", "GU
 var commonInitialismsReplacer *strings.Replacer
 
 var goSrcRegexp = regexp.MustCompile(`jinzhu/gorm(@.*)?/.*.go`)
-var goTestRegexp = regexp.MustCompile(`jinzhu/gorm(@.*)?/.*test.go`)
+var goTestRegexp = regexp.MustCompile(`jinzhu/gorm(@.*)?/.*json_test.go`)
 
 func init() {
 	var commonInitialismsForReplacer []string

@@ -82,23 +82,28 @@ type xlsxFonts struct {
 	Font  []*xlsxFont `xml:"font"`
 }
 
-// xlsxFont directly maps the font element. This element defines the
-// properties for one of the fonts used in this workbook.
-type xlsxFont struct {
+// font directly maps the font element.
+type font struct {
 	Name     *attrValString `xml:"name"`
 	Charset  *attrValInt    `xml:"charset"`
 	Family   *attrValInt    `xml:"family"`
-	B        *bool          `xml:"b,omitempty"`
-	I        *bool          `xml:"i,omitempty"`
-	Strike   *bool          `xml:"strike,omitempty"`
-	Outline  *bool          `xml:"outline,omitempty"`
-	Shadow   *bool          `xml:"shadow,omitempty"`
-	Condense *bool          `xml:"condense,omitempty"`
-	Extend   *bool          `xml:"extend,omitempty"`
+	B        bool           `xml:"b,omitempty"`
+	I        bool           `xml:"i,omitempty"`
+	Strike   bool           `xml:"strike,omitempty"`
+	Outline  bool           `xml:"outline,omitempty"`
+	Shadow   bool           `xml:"shadow,omitempty"`
+	Condense bool           `xml:"condense,omitempty"`
+	Extend   bool           `xml:"extend,omitempty"`
 	Color    *xlsxColor     `xml:"color"`
-	Sz       *attrValFloat  `xml:"sz"`
+	Sz       *attrValInt    `xml:"sz"`
 	U        *attrValString `xml:"u"`
 	Scheme   *attrValString `xml:"scheme"`
+}
+
+// xlsxFont directly maps the font element. This element defines the properties
+// for one of the fonts used in this workbook.
+type xlsxFont struct {
+	Font string `xml:",innerxml"`
 }
 
 // xlsxFills directly maps the fills element. This element defines the cell
@@ -257,7 +262,7 @@ type xlsxDxf struct {
 
 // dxf directly maps the dxf element.
 type dxf struct {
-	Font       *xlsxFont       `xml:"font"`
+	Font       *font           `xml:"font"`
 	NumFmt     *xlsxNumFmt     `xml:"numFmt"`
 	Fill       *xlsxFill       `xml:"fill"`
 	Alignment  *xlsxAlignment  `xml:"alignment"`
@@ -315,12 +320,12 @@ type xlsxStyleColors struct {
 
 // formatFont directly maps the styles settings of the fonts.
 type formatFont struct {
-	Bold      bool    `json:"bold"`
-	Italic    bool    `json:"italic"`
-	Underline string  `json:"underline"`
-	Family    string  `json:"family"`
-	Size      float64 `json:"size"`
-	Color     string  `json:"color"`
+	Bold      bool   `json:"bold"`
+	Italic    bool   `json:"italic"`
+	Underline string `json:"underline"`
+	Family    string `json:"family"`
+	Size      int    `json:"size"`
+	Color     string `json:"color"`
 }
 
 // formatStyle directly maps the styles settings of the cells.

@@ -108,11 +108,7 @@ func (dd *DataValidation) SetInput(title, msg string) {
 
 // SetDropList data validation list.
 func (dd *DataValidation) SetDropList(keys []string) error {
-	formula := "\"" + strings.Join(keys, ",") + "\""
-	if dataValidationFormulaStrLen < len(formula) {
-		return fmt.Errorf(dataValidationFormulaStrLenErr)
-	}
-	dd.Formula1 = fmt.Sprintf("<formula1>%s</formula1>", formula)
+	dd.Formula1 = "\"" + strings.Join(keys, ",") + "\""
 	dd.Type = convDataValidationType(typeList)
 	return nil
 }
@@ -121,12 +117,12 @@ func (dd *DataValidation) SetDropList(keys []string) error {
 func (dd *DataValidation) SetRange(f1, f2 int, t DataValidationType, o DataValidationOperator) error {
 	formula1 := fmt.Sprintf("%d", f1)
 	formula2 := fmt.Sprintf("%d", f2)
-	if dataValidationFormulaStrLen+21 < len(dd.Formula1) || dataValidationFormulaStrLen+21 < len(dd.Formula2) {
+	if dataValidationFormulaStrLen < len(dd.Formula1) || dataValidationFormulaStrLen < len(dd.Formula2) {
 		return fmt.Errorf(dataValidationFormulaStrLenErr)
 	}
 
-	dd.Formula1 = fmt.Sprintf("<formula1>%s</formula1>", formula1)
-	dd.Formula2 = fmt.Sprintf("<formula2>%s</formula2>", formula2)
+	dd.Formula1 = formula1
+	dd.Formula2 = formula2
 	dd.Type = convDataValidationType(t)
 	dd.Operator = convDataValidationOperatior(o)
 	return nil
@@ -142,7 +138,7 @@ func (dd *DataValidation) SetRange(f1, f2 int, t DataValidationType, o DataValid
 //     dvRange := excelize.NewDataValidation(true)
 //     dvRange.Sqref = "A7:B8"
 //     dvRange.SetSqrefDropList("E1:E3", true)
-//     f.AddDataValidation("Sheet1", dvRange)
+//     xlsx.AddDataValidation("Sheet1", dvRange)
 //
 func (dd *DataValidation) SetSqrefDropList(sqref string, isCurrentSheet bool) error {
 	if isCurrentSheet {
@@ -208,7 +204,7 @@ func convDataValidationOperatior(o DataValidationOperator) string {
 //     dvRange.Sqref = "A1:B2"
 //     dvRange.SetRange(10, 20, excelize.DataValidationTypeWhole, excelize.DataValidationOperatorBetween)
 //     dvRange.SetError(excelize.DataValidationErrorStyleStop, "error title", "error body")
-//     err := f.AddDataValidation("Sheet1", dvRange)
+//     xlsx.AddDataValidation("Sheet1", dvRange)
 //
 // Example 2, set data validation on Sheet1!A3:B4 with validation criteria
 // settings, and show input message when cell is selected:
@@ -217,7 +213,7 @@ func convDataValidationOperatior(o DataValidationOperator) string {
 //     dvRange.Sqref = "A3:B4"
 //     dvRange.SetRange(10, 20, excelize.DataValidationTypeWhole, excelize.DataValidationOperatorGreaterThan)
 //     dvRange.SetInput("input title", "input body")
-//     err = f.AddDataValidation("Sheet1", dvRange)
+//     xlsx.AddDataValidation("Sheet1", dvRange)
 //
 // Example 3, set data validation on Sheet1!A5:B6 with validation criteria
 // settings, create in-cell dropdown by allowing list source:
@@ -225,17 +221,13 @@ func convDataValidationOperatior(o DataValidationOperator) string {
 //     dvRange = excelize.NewDataValidation(true)
 //     dvRange.Sqref = "A5:B6"
 //     dvRange.SetDropList([]string{"1", "2", "3"})
-//     err = f.AddDataValidation("Sheet1", dvRange)
+//     xlsx.AddDataValidation("Sheet1", dvRange)
 //
-func (f *File) AddDataValidation(sheet string, dv *DataValidation) error {
-	xlsx, err := f.workSheetReader(sheet)
-	if err != nil {
-		return err
-	}
+func (f *File) AddDataValidation(sheet string, dv *DataValidation) {
+	xlsx := f.workSheetReader(sheet)
 	if nil == xlsx.DataValidations {
 		xlsx.DataValidations = new(xlsxDataValidations)
 	}
 	xlsx.DataValidations.DataValidation = append(xlsx.DataValidations.DataValidation, dv)
 	xlsx.DataValidations.Count = len(xlsx.DataValidations.DataValidation)
-	return err
 }

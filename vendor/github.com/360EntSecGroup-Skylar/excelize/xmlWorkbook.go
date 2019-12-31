@@ -146,8 +146,9 @@ type xlsxSheets struct {
 	Sheet []xlsxSheet `xml:"sheet"`
 }
 
-// xlsxSheet defines a sheet in this workbook. Sheet data is stored in a
-// separate part.
+// xlsxSheet directly maps the sheet element from the namespace
+// http://schemas.openxmlformats.org/spreadsheetml/2006/main - currently I have
+// not checked it for completeness - it does as much as I need.
 type xlsxSheet struct {
 	Name    string `xml:"name,attr,omitempty"`
 	SheetID int    `xml:"sheetId,attr,omitempty"`
@@ -175,7 +176,7 @@ type xlsxPivotCaches struct {
 
 // xlsxPivotCache directly maps the pivotCache element.
 type xlsxPivotCache struct {
-	CacheID int    `xml:"cacheId,attr"`
+	CacheID int    `xml:"cacheId,attr,omitempty"`
 	RID     string `xml:"http://schemas.openxmlformats.org/officeDocument/2006/relationships id,attr,omitempty"`
 }
 
@@ -287,13 +288,4 @@ type xlsxCustomWorkbookView struct {
 	WindowWidth          *int    `xml:"windowWidth,attr"`
 	XWindow              *int    `xml:"xWindow,attr"`
 	YWindow              *int    `xml:"yWindow,attr"`
-}
-
-// DefinedName directly maps the name for a cell or cell range on a
-// worksheet.
-type DefinedName struct {
-	Name     string
-	Comment  string
-	RefersTo string
-	Scope    string
 }

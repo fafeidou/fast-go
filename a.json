@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "adjacentColors": {
+      "type": "text",
+      "fielddata": true
+    }
+  }
+}

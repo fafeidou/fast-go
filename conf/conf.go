@@ -21,11 +21,11 @@ var (
 )
 
 type AppConfig struct {
-	Name      string
-	SearchUrl string `mapstructure:"search_url"`
-	JwtSecret string
-	PageSize  int
-	PrefixUrl string
+	Name            string
+	SearchUrl       string `mapstructure:"search_url"`
+	JwtSecret       string
+	PageSize        int
+	PrefixUrl       string
 	RuntimeRootPath string
 
 	ImageSavePath  string
@@ -41,10 +41,10 @@ type AppConfig struct {
 	LogFileExt  string
 	TimeFormat  string
 
-	Server Server
-	Redis Redis
+	Server   Server
+	Redis    Redis
 	Database Database
-	AliOss AliOss
+	AliOss   AliOss
 }
 
 type Server struct {
@@ -72,15 +72,15 @@ type Database struct {
 }
 
 type AliOss struct {
-	AliyunEndPoint string
-	AliyunAccessKeyId string
+	AliyunEndPoint        string
+	AliyunAccessKeyId     string
 	AliyunAccessKeySecret string
-	AliyunBucketName string
-	AliyunPrefix string
-	AliyunDomain string
+	AliyunBucketName      string
+	AliyunPrefix          string
+	AliyunDomain          string
 }
 
-func Setup(){
+func Setup() {
 	viper.AutomaticEnv()
 	initDefault()
 }
@@ -100,7 +100,7 @@ func init() {
 
 func initDefault() {
 	viper.SetDefault(kAppName, "go-app")
-	viper.SetDefault(kConfigServer, "http://192.168.133.184:8888")
+	viper.SetDefault(kConfigServer, "http://localhost:8888")
 	viper.SetDefault(kConfigLabel, "master")
 	viper.SetDefault(kConfigProfile, "dev")
 	viper.SetDefault(kConfigType, "yml")

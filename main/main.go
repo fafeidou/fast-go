@@ -1,59 +1,103 @@
-// hello.go
 package main
 
-//void SayHello(const char* s);
-import "C"
 import (
-	"bytes"
-	"gopkg.in/gomail.v2"
-	"html/template"
+	"encoding/json"
+	"fmt"
+	"github.com/nacos-group/nacos-sdk-go/clients"
+	"github.com/nacos-group/nacos-sdk-go/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/vo"
 	"strings"
+	"time"
 )
-const XXX_MAIL_TEMPLATE = `    <div>
-        <h3>123</h3>
-        <p>3456</p>
-        <h3>789</h2>
-        <table style="border-collapse:collapse;border: 1px solid black;">
-            <thead style="border-collapse:collapse;border: 1px solid black;">
-                <tr style="border-collapse:collapse;border: 1px solid black;text-align: center;">
-                    <th style="border-collapse:collapse;border: 1px solid black;">Case Name</th>
-                    <th style="border-collapse:collapse;border: 1px solid black;">Owner</th>
-                    <th style="border-collapse:collapse;border: 1px solid black;">Creator</th>
-                    <th style="border-collapse:collapse;border: 1px solid black;">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-            {{with .Job}}{{range $k, $v := .Cases}}
-                <tr style="border-collapse:collapse;border: 1px solid black;text-align: center;">
-                    <td style="border-collapse:collapse;border: 1px solid black;">{{$v.Name}}         </td>
-                    <td style="border-collapse:collapse;border: 1px solid black;">{{$v.IsSuccess}}          </td>
-                    <td style="border-collapse:collapse;border: 1px solid black;">{{$v.Agent}}               </td>
 
-                </tr>
-             {{end}}
-             {{end}}
-            </tbody>
-        </table>
-
-    </div>`
 func main() {
-	//C.SayHello(C.CString("Hello, World\n"))
-	//temp := PageInfo{Job: &job}
-	MAIL_TEMPLATE := XXX_MAIL_TEMPLATE
-	m := gomail.NewMessage()
-	m.SetHeader("From", "ckc_it@163.com")
-	m.SetHeader("To", strings.Split("943104990@qq.com,476688386@qq.com", ",")...)//send email to multipul persons
-	m.SetHeader("Subject", "Hello!")
-	t, err := template.New("mail summary template").Parse(MAIL_TEMPLATE)
+	UnknownJson(`{"a":1}`)
+	UnknownJson(`[{"a":1},{"b":2}]`)
+}
+
+func UnknownJson(data string) {
+	if data != `` {
+		r := strings.NewReader(data)
+		dec := json.NewDecoder(r)
+		switch data[0] {
+		case 91:
+			// "[" 开头的Json
+			var param []interface{}
+			dec.Decode(&param)
+			fmt.Println(param)
+		case 123:
+			// "{" 开头的Json
+			param := make(map[string]interface{})
+			dec.Decode(&param)
+			fmt.Println(param)
+		}
+	}
+}
+
+func nacos() {
+	// 从控制台命名空间管理的"命名空间详情"中拷贝 End Point、命名空间 ID
+	var endpoint = "10.12.28.26"
+	var namespaceId = "service-hi.yaml"
+	// 推荐使用 RAM 用户的 accessKey、secretKey
+	var accessKey = "nacos"
+	var secretKey = "nacos"
+
+	clientConfig := constant.ClientConfig{
+		//
+		Endpoint:       endpoint + ":8848",
+		NamespaceId:    namespaceId,
+		AccessKey:      accessKey,
+		SecretKey:      secretKey,
+		TimeoutMs:      5 * 1000,
+		ListenInterval: 30 * 1000,
+	}
+
+	configClient, err := clients.CreateConfigClient(map[string]interface{}{
+		"clientConfig": clientConfig,
+	})
+
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
-	buffer := new(bytes.Buffer)
-	t.Execute(buffer, "")
-	m.SetBody("text/html", buffer.String())
-	d := gomail.Dialer{Host: "smtp.163.com", Port: 465, Username: "ckc_it@163.com", Password: "liangge666",SSL:true}
-	if err := d.DialAndSend(m); err != nil {
-		return
+
+	var dataId = "com.alibaba.nacos.example.properties"
+	var group = "DEFAULT_GROUP"
+
+	// 发布配置
+	success, err := configClient.PublishConfig(vo.ConfigParam{
+		DataId:  dataId,
+		Group:   group,
+		Content: "connectTimeoutInMills=3000"})
+
+	if success {
+		fmt.Println("Publish config successfully.")
 	}
-	return
+
+	time.Sleep(3 * time.Second)
+
+	// 获取配置
+	content, err := configClient.GetConfig(vo.ConfigParam{
+		DataId: dataId,
+		Group:  group})
+
+	fmt.Println("Get config：" + content)
+
+	// 监听配置
+	configClient.ListenConfig(vo.ConfigParam{
+		DataId: dataId,
+		Group:  group,
+		OnChange: func(namespace, group, dataId, data string) {
+			fmt.Println("ListenConfig group:" + group + ", dataId:" + dataId + ", data:" + data)
+		},
+	})
+
+	// 删除配置
+	success, err = configClient.DeleteConfig(vo.ConfigParam{
+		DataId: dataId,
+		Group:  group})
+
+	if success {
+		fmt.Println("Delete config successfully.")
+	}
 }

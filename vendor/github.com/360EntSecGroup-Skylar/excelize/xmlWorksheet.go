@@ -24,7 +24,6 @@ type xlsxWorksheet struct {
 	SheetData             xlsxSheetData                `xml:"sheetData"`
 	SheetProtection       *xlsxSheetProtection         `xml:"sheetProtection"`
 	AutoFilter            *xlsxAutoFilter              `xml:"autoFilter"`
-	CustomSheetViews      *xlsxCustomSheetViews        `xml:"customSheetViews"`
 	MergeCells            *xlsxMergeCells              `xml:"mergeCells"`
 	PhoneticPr            *xlsxPhoneticPr              `xml:"phoneticPr"`
 	ConditionalFormatting []*xlsxConditionalFormatting `xml:"conditionalFormatting"`
@@ -34,8 +33,6 @@ type xlsxWorksheet struct {
 	PageMargins           *xlsxPageMargins             `xml:"pageMargins"`
 	PageSetUp             *xlsxPageSetUp               `xml:"pageSetup"`
 	HeaderFooter          *xlsxHeaderFooter            `xml:"headerFooter"`
-	RowBreaks             *xlsxBreaks                  `xml:"rowBreaks"`
-	ColBreaks             *xlsxBreaks                  `xml:"colBreaks"`
 	Drawing               *xlsxDrawing                 `xml:"drawing"`
 	LegacyDrawing         *xlsxLegacyDrawing           `xml:"legacyDrawing"`
 	Picture               *xlsxPicture                 `xml:"picture"`
@@ -56,27 +53,23 @@ type xlsxDrawing struct {
 // footers on the first page can differ from those on odd- and even-numbered
 // pages. In the latter case, the first page is not considered an odd page.
 type xlsxHeaderFooter struct {
-	AlignWithMargins bool           `xml:"alignWithMargins,attr,omitempty"`
-	DifferentFirst   bool           `xml:"differentFirst,attr,omitempty"`
-	DifferentOddEven bool           `xml:"differentOddEven,attr,omitempty"`
-	ScaleWithDoc     bool           `xml:"scaleWithDoc,attr,omitempty"`
-	OddHeader        string         `xml:"oddHeader,omitempty"`
-	OddFooter        string         `xml:"oddFooter,omitempty"`
-	EvenHeader       string         `xml:"evenHeader,omitempty"`
-	EvenFooter       string         `xml:"evenFooter,omitempty"`
-	FirstFooter      string         `xml:"firstFooter,omitempty"`
-	FirstHeader      string         `xml:"firstHeader,omitempty"`
-	DrawingHF        *xlsxDrawingHF `xml:"drawingHF"`
+	DifferentFirst   bool             `xml:"differentFirst,attr,omitempty"`
+	DifferentOddEven bool             `xml:"differentOddEven,attr,omitempty"`
+	OddHeader        []*xlsxOddHeader `xml:"oddHeader"`
+	OddFooter        []*xlsxOddFooter `xml:"oddFooter"`
 }
 
-// xlsxDrawingHF (Drawing Reference in Header Footer) specifies the usage of
-// drawing objects to be rendered in the headers and footers of the sheet. It
-// specifies an explicit relationship to the part containing the DrawingML
-// shapes used in the headers and footers. It also indicates where in the
-// headers and footers each shape belongs. One drawing object can appear in
-// each of the left section, center section and right section of a header and
-// a footer.
-type xlsxDrawingHF struct {
+// xlsxOddHeader directly maps the oddHeader element in the namespace
+// http://schemas.openxmlformats.org/spreadsheetml/2006/main - currently I have
+// not checked it for completeness - it does as much as I need.
+type xlsxOddHeader struct {
+	Content string `xml:",chardata"`
+}
+
+// xlsxOddFooter directly maps the oddFooter element in the namespace
+// http://schemas.openxmlformats.org/spreadsheetml/2006/main - currently I have
+// not checked it for completeness - it does as much as I need.
+type xlsxOddFooter struct {
 	Content string `xml:",chardata"`
 }
 
@@ -90,14 +83,14 @@ type xlsxPageSetUp struct {
 	Draft              bool    `xml:"draft,attr,omitempty"`
 	Errors             string  `xml:"errors,attr,omitempty"`
 	FirstPageNumber    int     `xml:"firstPageNumber,attr,omitempty"`
-	FitToHeight        int     `xml:"fitToHeight,attr,omitempty"`
+	FitToHeight        *int    `xml:"fitToHeight,attr"`
 	FitToWidth         int     `xml:"fitToWidth,attr,omitempty"`
 	HorizontalDPI      float32 `xml:"horizontalDpi,attr,omitempty"`
 	RID                string  `xml:"http://schemas.openxmlformats.org/officeDocument/2006/relationships id,attr,omitempty"`
 	Orientation        string  `xml:"orientation,attr,omitempty"`
 	PageOrder          string  `xml:"pageOrder,attr,omitempty"`
 	PaperHeight        string  `xml:"paperHeight,attr,omitempty"`
-	PaperSize          int     `xml:"paperSize,attr,omitempty"`
+	PaperSize          string  `xml:"paperSize,attr,omitempty"`
 	PaperWidth         string  `xml:"paperWidth,attr,omitempty"`
 	Scale              int     `xml:"scale,attr,omitempty"`
 	UseFirstPageNumber bool    `xml:"useFirstPageNumber,attr,omitempty"`
@@ -302,63 +295,6 @@ type xlsxRow struct {
 	C            []xlsxC `xml:"c"`
 }
 
-// xlsxCustomSheetViews directly maps the customSheetViews element. This is a
-// collection of custom sheet views.
-type xlsxCustomSheetViews struct {
-	CustomSheetView []*xlsxCustomSheetView `xml:"customSheetView"`
-}
-
-// xlsxBrk directly maps the row or column break to use when paginating a
-// worksheet.
-type xlsxBrk struct {
-	ID  int  `xml:"id,attr,omitempty"`
-	Min int  `xml:"min,attr,omitempty"`
-	Max int  `xml:"max,attr,omitempty"`
-	Man bool `xml:"man,attr,omitempty"`
-	Pt  bool `xml:"pt,attr,omitempty"`
-}
-
-// xlsxBreaks directly maps a collection of the row or column breaks.
-type xlsxBreaks struct {
-	Brk              *xlsxBrk `xml:"brk"`
-	Count            int      `xml:"count,attr,omitempty"`
-	ManualBreakCount int      `xml:"manualBreakCount,attr,omitempty"`
-}
-
-// xlsxCustomSheetView directly maps the customSheetView element.
-type xlsxCustomSheetView struct {
-	Pane           *xlsxPane         `xml:"pane"`
-	Selection      *xlsxSelection    `xml:"selection"`
-	RowBreaks      *xlsxBreaks       `xml:"rowBreaks"`
-	ColBreaks      *xlsxBreaks       `xml:"colBreaks"`
-	PageMargins    *xlsxPageMargins  `xml:"pageMargins"`
-	PrintOptions   *xlsxPrintOptions `xml:"printOptions"`
-	PageSetup      *xlsxPageSetUp    `xml:"pageSetup"`
-	HeaderFooter   *xlsxHeaderFooter `xml:"headerFooter"`
-	AutoFilter     *xlsxAutoFilter   `xml:"autoFilter"`
-	ExtLst         *xlsxExt          `xml:"extLst"`
-	GUID           string            `xml:"guid,attr"`
-	Scale          int               `xml:"scale,attr,omitempty"`
-	ColorID        int               `xml:"colorId,attr,omitempty"`
-	ShowPageBreaks bool              `xml:"showPageBreaks,attr,omitempty"`
-	ShowFormulas   bool              `xml:"showFormulas,attr,omitempty"`
-	ShowGridLines  bool              `xml:"showGridLines,attr,omitempty"`
-	ShowRowCol     bool              `xml:"showRowCol,attr,omitempty"`
-	OutlineSymbols bool              `xml:"outlineSymbols,attr,omitempty"`
-	ZeroValues     bool              `xml:"zeroValues,attr,omitempty"`
-	FitToPage      bool              `xml:"fitToPage,attr,omitempty"`
-	PrintArea      bool              `xml:"printArea,attr,omitempty"`
-	Filter         bool              `xml:"filter,attr,omitempty"`
-	ShowAutoFilter bool              `xml:"showAutoFilter,attr,omitempty"`
-	HiddenRows     bool              `xml:"hiddenRows,attr,omitempty"`
-	HiddenColumns  bool              `xml:"hiddenColumns,attr,omitempty"`
-	State          string            `xml:"state,attr,omitempty"`
-	FilterUnique   bool              `xml:"filterUnique,attr,omitempty"`
-	View           string            `xml:"view,attr,omitempty"`
-	ShowRuler      bool              `xml:"showRuler,attr,omitempty"`
-	TopLeftCell    string            `xml:"topLeftCell,attr,omitempty"`
-}
-
 // xlsxMergeCell directly maps the mergeCell element. A single merged cell.
 type xlsxMergeCell struct {
 	Ref string `xml:"ref,attr,omitempty"`
@@ -388,16 +324,16 @@ type DataValidation struct {
 	Error            *string `xml:"error,attr"`
 	ErrorStyle       *string `xml:"errorStyle,attr"`
 	ErrorTitle       *string `xml:"errorTitle,attr"`
-	Operator         string  `xml:"operator,attr,omitempty"`
+	Operator         string  `xml:"operator,attr"`
 	Prompt           *string `xml:"prompt,attr"`
-	PromptTitle      *string `xml:"promptTitle,attr"`
-	ShowDropDown     bool    `xml:"showDropDown,attr,omitempty"`
-	ShowErrorMessage bool    `xml:"showErrorMessage,attr,omitempty"`
-	ShowInputMessage bool    `xml:"showInputMessage,attr,omitempty"`
+	PromptTitle      *string `xml:"promptTitle"`
+	ShowDropDown     bool    `xml:"showDropDown,attr"`
+	ShowErrorMessage bool    `xml:"showErrorMessage,attr"`
+	ShowInputMessage bool    `xml:"showInputMessage,attr"`
 	Sqref            string  `xml:"sqref,attr"`
 	Type             string  `xml:"type,attr"`
-	Formula1         string  `xml:",innerxml"`
-	Formula2         string  `xml:",innerxml"`
+	Formula1         string  `xml:"formula1"`
+	Formula2         string  `xml:"formula2"`
 }
 
 // xlsxC directly maps the c element in the namespace
@@ -449,26 +385,26 @@ type xlsxF struct {
 // enforce when the sheet is protected.
 type xlsxSheetProtection struct {
 	AlgorithmName       string `xml:"algorithmName,attr,omitempty"`
-	Password            string `xml:"password,attr,omitempty"`
-	HashValue           string `xml:"hashValue,attr,omitempty"`
-	SaltValue           string `xml:"saltValue,attr,omitempty"`
-	SpinCount           int    `xml:"spinCount,attr,omitempty"`
-	Sheet               bool   `xml:"sheet,attr,omitempty"`
-	Objects             bool   `xml:"objects,attr,omitempty"`
-	Scenarios           bool   `xml:"scenarios,attr,omitempty"`
+	AutoFilter          bool   `xml:"autoFilter,attr,omitempty"`
+	DeleteColumns       bool   `xml:"deleteColumns,attr,omitempty"`
+	DeleteRows          bool   `xml:"deleteRows,attr,omitempty"`
 	FormatCells         bool   `xml:"formatCells,attr,omitempty"`
 	FormatColumns       bool   `xml:"formatColumns,attr,omitempty"`
 	FormatRows          bool   `xml:"formatRows,attr,omitempty"`
+	HashValue           string `xml:"hashValue,attr,omitempty"`
 	InsertColumns       bool   `xml:"insertColumns,attr,omitempty"`
-	InsertRows          bool   `xml:"insertRows,attr,omitempty"`
 	InsertHyperlinks    bool   `xml:"insertHyperlinks,attr,omitempty"`
-	DeleteColumns       bool   `xml:"deleteColumns,attr,omitempty"`
-	DeleteRows          bool   `xml:"deleteRows,attr,omitempty"`
-	SelectLockedCells   bool   `xml:"selectLockedCells,attr,omitempty"`
-	Sort                bool   `xml:"sort,attr,omitempty"`
-	AutoFilter          bool   `xml:"autoFilter,attr,omitempty"`
+	InsertRows          bool   `xml:"insertRows,attr,omitempty"`
+	Objects             bool   `xml:"objects,attr,omitempty"`
+	Password            string `xml:"password,attr,omitempty"`
 	PivotTables         bool   `xml:"pivotTables,attr,omitempty"`
+	SaltValue           string `xml:"saltValue,attr,omitempty"`
+	Scenarios           bool   `xml:"scenarios,attr,omitempty"`
+	SelectLockedCells   bool   `xml:"selectLockedCells,attr,omitempty"`
 	SelectUnlockedCells bool   `xml:"selectUnlockedCells,attr,omitempty"`
+	Sheet               bool   `xml:"sheet,attr,omitempty"`
+	Sort                bool   `xml:"sort,attr,omitempty"`
+	SpinCount           int    `xml:"spinCount,attr,omitempty"`
 }
 
 // xlsxPhoneticPr (Phonetic Properties) represents a collection of phonetic
@@ -546,7 +482,7 @@ type xlsxIconSet struct {
 type xlsxCfvo struct {
 	Gte    bool        `xml:"gte,attr,omitempty"`
 	Type   string      `xml:"type,attr,omitempty"`
-	Val    string      `xml:"val,attr,omitempty"`
+	Val    string      `xml:"val,attr"`
 	ExtLst *xlsxExtLst `xml:"extLst"`
 }
 
@@ -690,18 +626,4 @@ type FormatSheetProtection struct {
 	SelectLockedCells   bool
 	SelectUnlockedCells bool
 	Sort                bool
-}
-
-// FormatHeaderFooter directly maps the settings of header and footer.
-type FormatHeaderFooter struct {
-	AlignWithMargins bool
-	DifferentFirst   bool
-	DifferentOddEven bool
-	ScaleWithDoc     bool
-	OddHeader        string
-	OddFooter        string
-	EvenHeader       string
-	EvenFooter       string
-	FirstFooter      string
-	FirstHeader      string
 }
