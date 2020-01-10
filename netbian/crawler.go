@@ -41,18 +41,6 @@ func SaveImage(imageUrl string) {
 	fmt.Println("图片保存完毕")
 }
 
-// Process each detail page and extract the url corresponding to the photo
-func HandleDetail(detailUrl string) {
-	detailContent := HandleUrl(detailUrl)
-	reg := regexp.MustCompile("<img class=\"BDE_Image\" src=\".*?\" size=")
-	imageTempSlice := reg.FindAllString(detailContent, -1)
-	reg2 := regexp.MustCompile("http.*jpg")
-	for _, i := range imageTempSlice {
-		imgUrl := reg2.FindString(i)
-		SaveImage(imgUrl)
-	}
-}
-
 // Process each list page and extract the details page url
 func HandleListContent(listContent string) {
 	//<img src="/uploads/allimg/191022/000653-1571674013a6f4.jpg" alt="荷花4k壁纸3840x2160">
@@ -72,7 +60,6 @@ func HandleListContent(listContent string) {
 			imgUrl := seedUrl + imgReg2.FindString(j)
 			SaveImage(imgUrl)
 		}
-
 	}
 }
 
